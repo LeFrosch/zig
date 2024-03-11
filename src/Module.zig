@@ -4640,10 +4640,10 @@ pub fn allocateNewDecl(
     });
 
     if (mod.emit_h) |mod_emit_h| {
-        if (@intFromEnum(decl_index) >= mod_emit_h.allocated_emit_h.len) {
+        while (@intFromEnum(decl_index) >= mod_emit_h.allocated_emit_h.len) {
             try mod_emit_h.allocated_emit_h.append(gpa, .{});
-            assert(@intFromEnum(decl_index) == mod_emit_h.allocated_emit_h.len);
         }
+        assert(@intFromEnum(decl_index) == mod_emit_h.allocated_emit_h.len - 1);
     }
 
     return decl_index;
