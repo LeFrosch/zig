@@ -744,7 +744,7 @@ fn flushDeclBlock(
     }
 }
 
-pub fn flushEmitH(module: *Module) !void {
+pub fn flushEmitH(arena: Allocator, module: *Module) !void {
     const tracy = trace(@src());
     defer tracy.end();
 
@@ -775,8 +775,18 @@ pub fn flushEmitH(module: *Module) !void {
         }
     }
 
-    const directory = emit_h.loc.directory orelse module.comp.local_cache_directory;
-    const file = try directory.handle.createFile(emit_h.loc.basename, .{
+    const path = blk: {
+        if (emit_h.loc.directory) |directory| {
+            break :blk try directory.joinZ(arena, &.{emit_h.loc.basename});
+        } else if (module.comp.bin_file) |lf| {
+            // default to cache directory of bin_file
+            break :blk try lf.emit.basenamePath(arena, emit_h.loc.basename);
+        } else {
+            return error.UnknownEmitHLoc;
+        }
+    };
+
+    const file = try fs.createFileAbsoluteZ(path, .{
         // We set the end position explicitly below; by not truncating the file, we possibly
         // make it easier on the file system by doing 1 reallocation instead of two.
         .truncate = false,

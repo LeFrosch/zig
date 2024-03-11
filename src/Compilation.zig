@@ -2331,7 +2331,7 @@ fn flush(comp: *Compilation, arena: Allocator, prog_node: *std.Progress.Node) !v
     }
 
     if (comp.module) |zcu| {
-        try link.File.C.flushEmitH(zcu);
+        try link.File.C.flushEmitH(arena, zcu);
 
         if (zcu.llvm_object) |llvm_object| {
             if (build_options.only_c) unreachable;
